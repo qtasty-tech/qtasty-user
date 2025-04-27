@@ -25,7 +25,7 @@ const LoginPage = () => {
       });
       
       const { user, token } = response.data;
-      login({ ...user, token });
+      login(user, token);
       navigate("/dashboard");
     } catch (err) {
       setError("Invalid credentials. Please try again.");
