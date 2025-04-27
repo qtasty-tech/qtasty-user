@@ -7,9 +7,16 @@ const FoodCard = ({ item }) => {
   const [showDetails, setShowDetails] = useState(false);
 
   const handleAddToCart = () => {
-    addToCart(item);
+    addToCart({
+      ...item,
+      // Ensure cart items have required fields
+      quantity: 1,
+      restaurantId: item.restaurant // Add restaurant ID if available
+    });
     setShowDetails(false);
   };
+
+  const [imageLoaded, setImageLoaded] = useState(false);
 
   return (
     <>
@@ -30,15 +37,21 @@ const FoodCard = ({ item }) => {
               )}
             </div>
           </div>
-          {item.imageUrl && (
-            <div className="md:w-1/3">
-              <img 
-                src={item.imageUrl} 
-                alt={item.name} 
-                className="w-full h-full object-cover md:h-32 md:rounded-r-lg md:rounded-l-none rounded-b-lg rounded-t-none"
-              />
-            </div>
-          )}
+{item.imageUrl && (
+          <div className="md:w-1/3 relative">
+            {!imageLoaded && (
+              <div className="animate-pulse bg-gray-200 w-full h-full" />
+            )}
+            <img 
+              src={item.imageUrl} 
+              alt={item.name}
+              onLoad={() => setImageLoaded(true)}
+              className={`w-full h-full object-cover md:h-32 md:rounded-r-lg md:rounded-l-none rounded-b-lg rounded-t-none ${
+                !imageLoaded ? 'hidden' : ''
+              }`}
+            />
+          </div>
+        )}
         </div>
       </div>
 

@@ -35,7 +35,7 @@ const Index = () => {
 
         const token = localStorage.getItem("token") || null;
         const response = await axios.get(
-          `http://localhost:5001/api/restaurants?category=${category}`,
+          `http://localhost:5001/api/restaurants/?category=${category}`,
           {
             headers: {
               Authorization: `Bearer ${token}`,
