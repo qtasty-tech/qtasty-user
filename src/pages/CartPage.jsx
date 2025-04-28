@@ -164,20 +164,15 @@ const CartPage = () => {
               </div>
             </div>
             
-            <div className="mb-6">
-              <h3 className="font-bold mb-2">Delivery Time</h3>
-              <select className="w-full p-3 border rounded-md focus:outline-none focus:ring-1 focus:ring-primary">
-                <option>As soon as possible</option>
-                <option>Schedule for later</option>
-              </select>
-            </div>
             
             <Link
-              to="/checkout"
-              className="w-full btn-accent block text-center py-3"
-            >
-              Proceed to Checkout
-            </Link>
+  to="/checkout"
+  state={{ deliveryAddress: selectedAddress }} // Pass address from state
+  className="w-full btn-accent block text-center py-3"
+>
+  Proceed to Checkout
+</Link>
+
           </div>
         </div>
       </div>

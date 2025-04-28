@@ -2,12 +2,15 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
+import { useLocation } from 'react-router-dom';
 
 const CheckoutPage = () => {
   const navigate = useNavigate();
   const { cart, totalPrice, clearCart } = useCart();
   const [paymentMethod, setPaymentMethod] = useState('creditCard');
   const [processing, setProcessing] = useState(false);
+  const location = useLocation();
+  const { deliveryAddress } = location.state || {}; // fallback if no address
   
   const deliveryFee = 3.99;
   const serviceFee = 2.49;
@@ -49,7 +52,7 @@ const CheckoutPage = () => {
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
               <div>
-                <label className="block text-gray-700 mb-2" htmlFor="firstName">First Name</label>
+                <label className="block text-gray-700 mb-2" htmlFor="firstName">Name</label>
                 <input 
                   type="text" 
                   id="firstName" 
@@ -58,7 +61,7 @@ const CheckoutPage = () => {
                 />
               </div>
               <div>
-                <label className="block text-gray-700 mb-2" htmlFor="lastName">Last Name</label>
+                <label className="block text-gray-700 mb-2" htmlFor="lastName">Nummber</label>
                 <input 
                   type="text" 
                   id="lastName" 
@@ -66,64 +69,21 @@ const CheckoutPage = () => {
                   required
                 />
               </div>
-              <div>
-                <label className="block text-gray-700 mb-2" htmlFor="email">Email</label>
-                <input 
-                  type="email" 
-                  id="email" 
-                  className="w-full p-3 border rounded-md focus:outline-none focus:ring-1 focus:ring-primary"
-                  required
-                />
-              </div>
-              <div>
-                <label className="block text-gray-700 mb-2" htmlFor="phone">Phone Number</label>
-                <input 
-                  type="tel" 
-                  id="phone" 
-                  className="w-full p-3 border rounded-md focus:outline-none focus:ring-1 focus:ring-primary"
-                  required
-                />
-              </div>
+
             </div>
             
             <div className="mb-6">
               <label className="block text-gray-700 mb-2" htmlFor="address">Delivery Address</label>
-              <input 
-                type="text" 
-                id="address" 
-                className="w-full p-3 border rounded-md focus:outline-none focus:ring-1 focus:ring-primary mb-4"
-                placeholder="Street address"
-                required
-              />
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div>
-                  <input 
-                    type="text" 
-                    id="city" 
-                    className="w-full p-3 border rounded-md focus:outline-none focus:ring-1 focus:ring-primary"
-                    placeholder="City"
-                    required
-                  />
-                </div>
-                <div>
-                  <input 
-                    type="text" 
-                    id="state" 
-                    className="w-full p-3 border rounded-md focus:outline-none focus:ring-1 focus:ring-primary"
-                    placeholder="State"
-                    required
-                  />
-                </div>
-                <div>
-                  <input 
-                    type="text" 
-                    id="zip" 
-                    className="w-full p-3 border rounded-md focus:outline-none focus:ring-1 focus:ring-primary"
-                    placeholder="ZIP Code"
-                    required
-                  />
-                </div>
-              </div>
+              <div className="w-full p-3 border rounded-md bg-gray-100">
+  {deliveryAddress ? (
+    <p>{deliveryAddress}</p>
+  ) : (
+    <p className="text-gray-400">No delivery address selected</p>
+  )}
+</div>
+
+
+
             </div>
             
             <div>
@@ -135,94 +95,6 @@ const CheckoutPage = () => {
                 placeholder="Any special instructions for delivery..."
               ></textarea>
             </div>
-          </div>
-          
-          <div className="bg-white rounded-lg shadow-md p-6 mb-6">
-            <h2 className="text-xl font-bold mb-4">Payment Method</h2>
-            
-            <div className="mb-4">
-              <div className="flex items-center mb-3">
-                <input 
-                  type="radio" 
-                  id="creditCard" 
-                  name="paymentMethod" 
-                  className="mr-2"
-                  checked={paymentMethod === 'creditCard'}
-                  onChange={() => setPaymentMethod('creditCard')}
-                />
-                <label htmlFor="creditCard" className="flex items-center">
-                  <span className="mr-2">Credit Card</span>
-                  <div className="flex space-x-1">
-                    <div className="w-8 h-5 bg-blue-600 rounded"></div>
-                    <div className="w-8 h-5 bg-red-500 rounded"></div>
-                    <div className="w-8 h-5 bg-gray-800 rounded"></div>
-                  </div>
-                </label>
-              </div>
-              
-              <div className="flex items-center">
-                <input 
-                  type="radio" 
-                  id="paypal" 
-                  name="paymentMethod" 
-                  className="mr-2"
-                  checked={paymentMethod === 'paypal'}
-                  onChange={() => setPaymentMethod('paypal')}
-                />
-                <label htmlFor="paypal" className="flex items-center">
-                  <span className="mr-2">PayPal</span>
-                  <div className="w-8 h-5 bg-blue-800 rounded"></div>
-                </label>
-              </div>
-            </div>
-            
-            {paymentMethod === 'creditCard' && (
-              <div className="mt-4 p-4 border border-gray-200 rounded-md">
-                <div className="mb-4">
-                  <label className="block text-gray-700 mb-2" htmlFor="cardNumber">Card Number</label>
-                  <input 
-                    type="text" 
-                    id="cardNumber" 
-                    className="w-full p-3 border rounded-md focus:outline-none focus:ring-1 focus:ring-primary"
-                    placeholder="1234 5678 9012 3456"
-                    required
-                  />
-                </div>
-                
-                <div className="grid grid-cols-2 gap-4 mb-4">
-                  <div>
-                    <label className="block text-gray-700 mb-2" htmlFor="expiry">Expiry Date</label>
-                    <input 
-                      type="text" 
-                      id="expiry" 
-                      className="w-full p-3 border rounded-md focus:outline-none focus:ring-1 focus:ring-primary"
-                      placeholder="MM/YY"
-                      required
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-gray-700 mb-2" htmlFor="cvc">CVC</label>
-                    <input 
-                      type="text" 
-                      id="cvc" 
-                      className="w-full p-3 border rounded-md focus:outline-none focus:ring-1 focus:ring-primary"
-                      placeholder="123"
-                      required
-                    />
-                  </div>
-                </div>
-                
-                <div>
-                  <label className="block text-gray-700 mb-2" htmlFor="nameOnCard">Name on Card</label>
-                  <input 
-                    type="text" 
-                    id="nameOnCard" 
-                    className="w-full p-3 border rounded-md focus:outline-none focus:ring-1 focus:ring-primary"
-                    required
-                  />
-                </div>
-              </div>
-            )}
           </div>
           
           <div className="bg-white rounded-lg shadow-md p-6 mb-6">
