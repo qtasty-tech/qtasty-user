@@ -35,7 +35,7 @@ const Index = () => {
 
         const token = localStorage.getItem("token") || null;
         const response = await axios.get(
-          `http://restaurant-service:5001/api/restaurants/?category=${category}`,
+          `http://localhost:5001/api/restaurants/?category=${category}`,
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -48,9 +48,9 @@ const Index = () => {
         const mappedRestaurants = response.data.map((restaurant) => ({
           id: restaurant._id,
           name: restaurant.name,
-          imageUrl: restaurant.image?.url || "", 
-          rating: restaurant.rating || 0, 
-          isPromoted: restaurant.isPromoted || false, 
+          imageUrl: restaurant.image?.url || "", // Fix image
+          rating: restaurant.rating || 0, // Already coming
+          isPromoted: restaurant.isPromoted || false, // If you have promotion later
           tags: restaurant.category ? [restaurant.category] : [], // Category to tags
           deliveryFee: restaurant.deliveryFee || 0, // Default value for now
           deliveryTime: restaurant.deliveryTime || 30, // Default 30 mins for now

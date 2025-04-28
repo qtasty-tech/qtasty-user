@@ -15,8 +15,8 @@ const RestaurantPage = () => {
       setLoading(true);
       try {
         const [menuRes, restaurantRes] = await Promise.all([
-          fetch(`http://restaurant-service:5001/api/restaurants/${id}/menu`),
-          fetch(`http://restaurant-service:5001/api/restaurants/customer/${id}`),
+          fetch(`http://localhost:5001/api/restaurants/${id}/menu`),
+          fetch(`http://localhost:5001/api/restaurants/customer/${id}`),
         ]);
 
         if (!restaurantRes.ok || !menuRes.ok) {
