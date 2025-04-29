@@ -7,6 +7,7 @@ import { CartProvider } from "./context/CartContext";
 import { AuthProvider } from "./context/AuthContext";
 import AppRoutes from "./routes/AppRoutes"; // Import the routes
 import { GoogleOAuthProvider } from '@react-oauth/google';
+import AccessibilityTaskbar from './context/AccessibilityTaskbar';  // Import the AccessibilityTaskbar component
 
 const queryClient = new QueryClient();
 
@@ -20,7 +21,10 @@ const App = () => (
             <Sonner />
             <BrowserRouter>
               <div className="flex flex-col min-h-screen">
-                <AppRoutes /> 
+                <AppRoutes />
+                
+                <AccessibilityTaskbar className="hidden sm:block md:block lg:block xl:block" />
+ 
               </div>
             </BrowserRouter>
           </CartProvider>
