@@ -9,6 +9,7 @@ import CheckoutPage from "../pages/CheckoutPage";
 import NotFound from "../pages/NotFound";
 import Navbar from "../components/layout/Navbar";
 import Footer from "../components/layout/Footer";
+import PaymentSuccess from "../pages/PaymentSuccess";
 
 const AppRoutes = () => (
   <Routes>
@@ -65,6 +66,16 @@ const AppRoutes = () => (
         <>
           <Navbar />
           <CheckoutPage />
+          <Footer />
+        </>
+      }
+    />
+    <Route
+      path="/return"
+      element={
+        <>
+          <Navbar />
+          <PaymentSuccess />
           <Footer />
         </>
       }
