@@ -62,7 +62,7 @@ const FoodCard = ({ item, restaurantId }) => {
             {item.imageUrl && (
               <div className="relative h-56">
                 <img 
-                  src={item.imageUrl} 
+                  src={item.image} 
                   alt={item.name} 
                   className="w-full h-full object-cover rounded-t-lg"
                 />

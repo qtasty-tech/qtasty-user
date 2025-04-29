@@ -48,7 +48,7 @@ const Index = () => {
         const mappedRestaurants = response.data.map((restaurant) => ({
           id: restaurant._id,
           name: restaurant.name,
-          imageUrl: restaurant.image?.url || "", // Fix image
+          imageUrl: restaurant.image || "", 
           rating: restaurant.rating || 0, // Already coming
           isPromoted: restaurant.isPromoted || false, // If you have promotion later
           tags: restaurant.category ? [restaurant.category] : [], // Category to tags
