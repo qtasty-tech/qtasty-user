@@ -179,9 +179,13 @@ const RestaurantPage = () => {
               >
                 <h2 className="text-2xl font-bold mb-4">{category.name}</h2>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
-                  {category.items.map((item) => (
-                    <FoodCard key={item.id} item={item} />
-                  ))}
+                {category.items.map((item) => (
+  <FoodCard 
+    key={item.id} 
+    item={item} 
+    restaurantId={restaurant.id} // Add restaurantId prop
+  />
+))}
                 </div>
               </div>
             ))}

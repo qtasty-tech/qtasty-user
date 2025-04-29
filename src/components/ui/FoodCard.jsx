@@ -2,7 +2,7 @@
 import { useState } from 'react';
 import { useCart } from '../../context/CartContext';
 
-const FoodCard = ({ item }) => {
+const FoodCard = ({ item, restaurantId }) => {
   const { addToCart } = useCart();
   const [showDetails, setShowDetails] = useState(false);
 
@@ -11,7 +11,7 @@ const FoodCard = ({ item }) => {
       ...item,
       // Ensure cart items have required fields
       quantity: 1,
-      restaurantId: item.restaurant // Add restaurant ID if available
+      restaurantId: restaurantId // Add restaurant ID if available
     });
     setShowDetails(false);
   };

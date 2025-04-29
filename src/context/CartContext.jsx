@@ -36,17 +36,14 @@ export function CartProvider({ children }) {
   const addToCart = (item) => {
     setCart(prevCart => {
       const existingItemIndex = prevCart.findIndex(
-        cartItem => cartItem.id === item.id
+        cartItem => cartItem.id === item.id && cartItem.restaurantId === item.restaurantId
       );
 
       if (existingItemIndex >= 0) {
         // Item exists, update quantity
         const updatedCart = [...prevCart];
-        updatedCart[existingItemIndex] = {
-          ...updatedCart[existingItemIndex],
-          quantity: updatedCart[existingItemIndex].quantity + 1
-        };
-        return updatedCart;
+      updatedCart[existingItemIndex].quantity += 1;
+      return updatedCart;
       } else {
         // Item doesn't exist, add new item
         return [...prevCart, { ...item, quantity: 1 }];
