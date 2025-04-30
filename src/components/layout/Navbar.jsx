@@ -20,7 +20,7 @@ const Navbar = () => {
   };
 
   return (
-    <nav className="bg-white shadow-md sticky top-0 z-50">
+    <nav className="bg-white/30 backdrop-blur-lg shadow-md sticky top-0 z-50">
       <div className="container mx-auto px-4 py-3">
         <div className="flex justify-between items-center">
           {/* Logo */}
@@ -51,7 +51,7 @@ const Navbar = () => {
                   <FaUserCircle />
                 </button>
                 {isDropdownOpen && (
-                  <div className="absolute right-0 mt-2 w-40 bg-white border rounded-lg shadow-lg py-2 z-50">
+                  <div className="absolute right-0 mt-2 w-40 bg-white/90 backdrop-blur-md border rounded-lg shadow-lg py-2 z-50">
                     <Link to="/profile" onClick={() => setIsDropdownOpen(false)} className="block px-4 py-2 text-supportive hover:bg-gray-100">Profile</Link>
                     <button onClick={handleLogout} className="block w-full text-left px-4 py-2 text-supportive hover:bg-gray-100">Logout</button>
                   </div>

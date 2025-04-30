@@ -10,6 +10,7 @@ import NotFound from "../pages/NotFound";
 import Navbar from "../components/layout/Navbar";
 import Footer from "../components/layout/Footer";
 import PaymentSuccess from "../pages/PaymentSuccess";
+import AllRestaurants from "../pages/AllRestaurants";
 
 const AppRoutes = () => (
   <Routes>
@@ -46,6 +47,16 @@ const AppRoutes = () => (
         <>
           <Navbar />
           <RestaurantPage />
+          <Footer />
+        </>
+      }
+    />
+    <Route
+      path="/restaurants"
+      element={
+        <>
+          <Navbar />
+          <AllRestaurants />
           <Footer />
         </>
       }
