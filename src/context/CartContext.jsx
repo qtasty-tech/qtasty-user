@@ -42,11 +42,17 @@ export function CartProvider({ children }) {
       if (existingItemIndex >= 0) {
         // Item exists, update quantity
         const updatedCart = [...prevCart];
-      updatedCart[existingItemIndex].quantity += 1;
-      return updatedCart;
+        updatedCart[existingItemIndex].quantity += 1;
+        return updatedCart;
       } else {
         // Item doesn't exist, add new item
-        return [...prevCart, { ...item, quantity: 1 }];
+        return [...prevCart, { 
+          ...item,
+          quantity: 1,
+          restaurantId: item.restaurantId,
+          restaurantName: item.restaurantName,
+          restaurantLogo: item.restaurantLogo
+        }];
       }
     });
   };

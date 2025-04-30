@@ -365,6 +365,7 @@ const RestaurantPage = () => {
                 className="mb-12 scroll-mt-24"
                 ref={(el) => (sectionRefs.current[`category-${cat.id}`] = el)}
               >
+
                 <div className="flex items-center gap-3 mb-6">
                   <h2 className="text-2xl font-bold text-gray-800">
                     {cat.name}
@@ -382,8 +383,10 @@ const RestaurantPage = () => {
                       item={item}
                       restaurantId={restaurant.id}
                       viewMode={viewMode}
+                      restaurantName={restaurant.name}
                     />
                   ))}
+
                 </div>
               </div>
             ))}

@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useCart } from '../../context/CartContext';
 import { X, ShoppingBag, Star } from 'lucide-react';
 
-const FoodCard = ({ item, restaurantId }) => {
+const FoodCard = ({ item, restaurantId,restaurantName }) => {
   const { addToCart } = useCart();
   const [showDetails, setShowDetails] = useState(false);
   const [quantity, setQuantity] = useState(1);
@@ -27,7 +27,9 @@ const FoodCard = ({ item, restaurantId }) => {
     addToCart({
       ...item,
       quantity: quantity,
-      restaurantId: restaurantId
+      restaurantId: restaurantId,
+      restaurantName: restaurantName,
+
     });
     setShowDetails(false);
     // Reset quantity after adding to cart
