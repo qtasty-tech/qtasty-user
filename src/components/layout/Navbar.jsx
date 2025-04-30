@@ -25,10 +25,10 @@ const Navbar = () => {
         <div className="flex justify-between items-center">
           {/* Logo */}
           <Link to="/" className="flex items-center space-x-2">
-            <span className="text-primary text-2xl font-bold">
-              Bite<span className="text-accent">on</span>Wheels
-            </span>
-          </Link>
+  <span className="text-gray-800 text-3xl font-bold">
+    Q<span className="text-accent">Tasty</span>
+  </span>
+</Link>
 
           {/* Desktop Nav */}
           <div className="hidden md:flex items-center space-x-8">
