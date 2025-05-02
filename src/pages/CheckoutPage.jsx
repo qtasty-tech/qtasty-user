@@ -13,7 +13,7 @@ const CheckoutPage = () => {
   const { currentUser } = useAuth();
   const { cart, totalPrice, clearCart } = useCart();
   const location = useLocation();
-  const { deliveryAddress } = location.state || {};
+  const { deliveryAddress, deliveryLocation } = location.state || {};
   const [orderId, setOrderId] = useState('');
   const [mainOrderId, setMainOrderId] = useState('');
   const [restaurantOrders, setRestaurantOrders] = useState([]);
@@ -104,36 +104,23 @@ const CheckoutPage = () => {
     });
   };
 
+  const saveOrderData = () => {
+    const orderData = {
+      mainOrderId,
+      restaurantOrders,
+      deliveryAddress,
+      deliveryLocation,
+      customerDetails,
+      total
+    };
+    localStorage.setItem('pendingOrder', JSON.stringify(orderData));
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setProcessing(true);
-
-    try {
-      // Submit payment
-      e.target.submit();
-
-      // After successful payment confirmation (you'll need to implement webhook handling)
-      const orderData = {
-        mainOrderId,
-        paymentTotal: total,
-        deliveryAddress,
-        customerDetails: {
-          ...customerDetails,
-          userId: currentUser?.uid || 'guest'
-        },
-        restaurantOrders
-      };
-
-      // Send to backend
-      await axios.post('/api/orders', orderData);
-      
-      // Clear cart only after successful backend submission
-      clearCart();
-      navigate('/order-confirmation', { state: { mainOrderId } });
-    } catch (error) {
-      console.error('Order submission failed:', error);
-      setProcessing(false);
-    }
+    saveOrderData();
+    
     // Submit form to PayHere
     e.target.submit();
   };

@@ -199,7 +199,10 @@ const CartPage = () => {
             
             <Link
   to="/checkout"
-  state={{ deliveryAddress: selectedAddress }} // Pass address from state
+  state={{ 
+    deliveryAddress: selectedAddress,
+    deliveryLocation: selectedLocation // Add coordinates
+  }}
   className="w-full btn-accent block text-center py-3"
 >
   Proceed to Checkout
