@@ -37,6 +37,7 @@ const PaymentSuccess = () => {
         console.log('Current user:', currentUser._id);
         // Create payment transaction
         const paymentResponse = await axios.post('http://localhost:8082/api/payments/create', {
+          stripePaymentIntentId:orderData.orderId,
           user: currentUser?._id,
           amount: orderData.total,
           currency: 'LKR',
@@ -51,6 +52,7 @@ const PaymentSuccess = () => {
             restaurant: restaurantOrder.restaurantId,
             customer: currentUser.name,
             phone: currentUser.phone,
+            stripePaymentIntentId:orderData.orderId,
             items: restaurantOrder.items.map(item => ({
               name: item.name,
               quantity: item.quantity,
