@@ -26,10 +26,11 @@ const FoodCard = ({ item, restaurantId,restaurantName }) => {
   const handleAddToCart = () => {
     addToCart({
       ...item,
-      quantity: quantity,
-      restaurantId: restaurantId,
-      restaurantName: restaurantName,
 
+      // Ensure cart items have required fields
+      quantity: 1,
+      restaurantId: restaurantId, // Add restaurant ID if available
+      restaurantName: restaurantName,
     });
     setShowDetails(false);
     // Reset quantity after adding to cart
