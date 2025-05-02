@@ -36,7 +36,7 @@ const PaymentSuccess = () => {
 
         console.log('Current user:', currentUser._id);
         // Create payment transaction
-        const paymentResponse = await axios.post('http://localhost:8000/api/payments/create', {
+        const paymentResponse = await axios.post('http://localhost:8082/api/payments/create', {
           user: currentUser?._id,
           amount: orderData.total,
           currency: 'LKR',
@@ -77,7 +77,7 @@ const PaymentSuccess = () => {
 
         // Update payment transaction with order IDs
         const orderIds = ordersResponse.map(res => res.data.order._id);
-        await axios.patch(`http://localhost:8000/api/payments/${paymentResponse.data._id}`, {
+        await axios.patch(`http://localhost:8082/api/payments/${paymentResponse.data._id}`, {
           orders: orderIds
         });
 
