@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useLocation } from 'react-router-dom';
-import { FaCheckCircle, FaEnvelope, FaPhoneAlt, FaExclamationTriangle } from 'react-icons/fa';
+import { FaCheckCircle, FaEnvelope, FaPhoneAlt, FaExclamationTriangle, FaTruck } from 'react-icons/fa';
 import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
 
@@ -92,6 +92,7 @@ const PaymentSuccess = () => {
         // Mark as processed and clear storage
         setIsProcessed(true);
         localStorage.removeItem('pendingOrder');
+        localStorage.removeItem('cart');
         setError(null);
       } catch (error) {
         console.error('Order processing failed:', error);
@@ -200,6 +201,13 @@ const PaymentSuccess = () => {
                     <a href="tel:+11234567890">+1 (123) 456-7890</a>
                   </div>
                 </div>
+                <button 
+      onClick={() => navigate(`/delivery-progress/${orderDetails.mainOrderId}`)}
+      className="mt-6 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg flex items-center justify-center"
+    >
+      <FaTruck className="mr-2" />
+      Track Delivery Status
+    </button>
               </div>
             </>
           )

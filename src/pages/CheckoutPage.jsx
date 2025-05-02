@@ -29,8 +29,8 @@ const CheckoutPage = () => {
   });
   
   // PayHere configuration
-  const merchantId = 1226643; // Replace with your merchant ID
-  const merchantSecret = "MjM3ODE4NDE0MzU5NzQ4NTM4MzI4NTAzMTE3NjUyODA1MzY4MjIw"; // Replace with your secret
+  const merchantId = 1229852; // Replace with your merchant ID
+  const merchantSecret = "MjA5OTExMjk3NjI3MDE2NTI3OTE0NTEyNzg0MDAzNDg0OTAyNjEy"; // Replace with your secret
   const deliveryFee = 200;
   const total = totalPrice + deliveryFee;
 

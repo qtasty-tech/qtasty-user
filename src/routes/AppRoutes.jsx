@@ -91,6 +91,16 @@ const AppRoutes = () => (
         </>
       }
     />
+    <Route
+      path="/delivery-progress/:orderId"
+      element={
+        <>
+          <Navbar />
+          <PaymentSuccess />
+          <Footer />
+        </>
+      }
+    />
     <Route path="*" element={<NotFound />} />
   </Routes>
 );
