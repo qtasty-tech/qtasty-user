@@ -1,14 +1,20 @@
+import { Link } from "react-router-dom";
 
-import { Link } from 'react-router-dom';
+const CategoryPill = ({ category, isActive, onClick, basePath = "/" }) => {
+  const handleClick = () => {
+    if (onClick) {
+      onClick(category);
+    }
+  };
 
-const CategoryPill = ({ category, isActive }) => {
   return (
-    <Link 
-      to={`/?category=${category.slug}`}
-      className={`px-4 py-2 rounded-full transition-colors whitespace-nowrap ${
-        isActive 
-          ? 'bg-primary text-white' 
-          : 'bg-white border border-gray-200 text-supportive hover:bg-gray-50'
+    <Link
+      to={`${basePath}?cuisine=${category.slug}`}
+      onClick={handleClick}
+      className={`px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-colors ${
+        isActive
+          ? "bg-primary text-white"
+          : "bg-gray-100 text-gray-700 hover:bg-gray-200"
       }`}
     >
       {category.name}

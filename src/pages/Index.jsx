@@ -6,21 +6,19 @@ import CategoryPill from "../components/ui/CategoryPill";
 
 const Index = () => {
   const [searchParams] = useSearchParams();
-  const [activeCategory, setActiveCategory] = useState("all");
+  const [activeCuisine, setActiveCuisine] = useState("all");
   const [filteredRestaurants, setFilteredRestaurants] = useState([]);
   const [featuredRestaurants, setFeaturedRestaurants] = useState([]);
-  const [categories, setCategories] = useState([]);
+  const [allCuisines, setAllCuisines] = useState([]);
   const [loading, setLoading] = useState(true);
 
+  // Fetch all cuisines on initial load
   useEffect(() => {
-    const category = searchParams.get("category") || "all";
-    setActiveCategory(category);
-
-    const fetchRestaurants = async () => {
+    const fetchAllCuisines = async () => {
       try {
         const token = localStorage.getItem("token") || null;
         const response = await axios.get(
-          `http://localhost:5001/api/restaurants/?category=${category}`,
+          `http://localhost:5001/api/restaurants/?cuisine=all`,
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -35,7 +33,63 @@ const Index = () => {
           imageUrl: restaurant.image || "",
           rating: restaurant.rating || 0,
           isPromoted: restaurant.isPromoted || false,
-          tags: restaurant.category ? [restaurant.category] : [],
+          tags: restaurant.cuisine ? [restaurant.cuisine] : [],
+          deliveryFee: restaurant.deliveryFee || 0,
+          deliveryTime: restaurant.deliveryTime || 30,
+          cuisine: restaurant.cuisine,
+        }));
+
+        // Generate unique cuisine list
+        const uniqueCuisines = [
+          { id: 0, name: "All", slug: "all" },
+          ...Array.from(
+            new Set(
+              mappedRestaurants
+                .map((r) => r.cuisine)
+                .filter((c) => !!c && c !== "")
+            )
+          ).map((cuisine, index) => ({
+            id: index + 1,
+            name: cuisine.charAt(0).toUpperCase() + cuisine.slice(1),
+            slug: cuisine.toLowerCase(),
+          })),
+        ];
+
+        setAllCuisines(uniqueCuisines);
+      } catch (error) {
+        console.error("Error fetching all cuisines:", error);
+      }
+    };
+
+    fetchAllCuisines();
+  }, []);
+
+  // Fetch restaurants based on selected cuisine
+  useEffect(() => {
+    const cuisine = searchParams.get("cuisine") || "all";
+    setActiveCuisine(cuisine);
+
+    const fetchRestaurants = async () => {
+      try {
+        setLoading(true);
+        const token = localStorage.getItem("token") || null;
+        const response = await axios.get(
+          `http://localhost:5001/api/restaurants/?cuisine=${cuisine}`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "multipart/form-data",
+            },
+          }
+        );
+
+        const mappedRestaurants = response.data.map((restaurant) => ({
+          id: restaurant._id,
+          name: restaurant.name,
+          imageUrl: restaurant.image || "",
+          rating: restaurant.rating || 0,
+          isPromoted: restaurant.isPromoted || false,
+          tags: restaurant.cuisine ? [restaurant.cuisine] : [],
           deliveryFee: restaurant.deliveryFee || 0,
           deliveryTime: restaurant.deliveryTime || 30,
           cuisine: restaurant.cuisine || "Various",
@@ -49,24 +103,6 @@ const Index = () => {
           .sort(() => 0.5 - Math.random())
           .slice(0, 3);
         setFeaturedRestaurants(randomSelection);
-
-        // Generate unique category list
-        const uniqueCategories = [
-          { id: 0, name: "All", slug: "all" },
-          ...Array.from(
-            new Set(
-              mappedRestaurants
-                .map((r) => r.tags[0])
-                .filter((c) => !!c)
-            )
-          ).map((cat, index) => ({
-            id: index + 1,
-            name: cat.charAt(0).toUpperCase() + cat.slice(1),
-            slug: cat.toLowerCase(),
-          })),
-        ];
-
-        setCategories(uniqueCategories);
       } catch (error) {
         console.error("Error fetching restaurants:", error);
       } finally {
@@ -118,7 +154,7 @@ const Index = () => {
           </div>
           <div className="absolute top-[20%] right-[15%] animate-float">
             <svg width="40" height="40" viewBox="0 0 24 24" fill="white">
-              <path d="M2 19h20l-2 2H4l-2-2zM5 6h14c1.1 0 2 .9 2 2v9H3V8c0-1.1.9-2 2-2zm14 2H5v7h14V8z"/>
+              <path d="M2 19h20l-2 2H4l-2-2zM5 6h14c1.1 0 2 .9.2 2v9H3V8c0-1.1.9-2 2-2zm14 2H5v7h14V8z"/>
             </svg>
           </div>
           <div className="absolute bottom-[30%] left-[20%] animate-float-slow">
@@ -227,15 +263,16 @@ const Index = () => {
         </div>
       </section>
 
-      {/* Categories Section */}
+      {/* Cuisines Section */}
       <section className="py-4 border-b border-gray-200 sticky top-[56px] bg-white z-10 shadow-sm">
         <div className="container mx-auto px-4">
           <div className="flex overflow-x-auto py-2 scrollbar-hide gap-3">
-            {categories.map((category) => (
+            {allCuisines.map((cuisine) => (
               <CategoryPill
-                key={category.id}
-                category={category}
-                isActive={activeCategory === category.slug}
+                key={cuisine.id}
+                category={cuisine}
+                isActive={activeCuisine === cuisine.slug}
+                basePath="/"
               />
             ))}
           </div>
@@ -249,7 +286,7 @@ const Index = () => {
             <h2 className="text-3xl font-bold text-gray-800">
               <span className="text-accent">Featured</span> Restaurants
             </h2>
-            <a href="#" className="text-accent font-medium hover:underline flex items-center">
+            <a href="/restaurants" className="text-accent font-medium hover:underline flex items-center">
               View all
               <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
@@ -412,8 +449,6 @@ const Index = () => {
           </div>
         </div>
       </section>
-
-     
     </div>
   );
 };
