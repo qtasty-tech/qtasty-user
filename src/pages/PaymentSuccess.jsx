@@ -3,6 +3,8 @@ import { useLocation } from 'react-router-dom';
 import { FaCheckCircle, FaEnvelope, FaPhoneAlt, FaExclamationTriangle, FaTruck } from 'react-icons/fa';
 import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
+import { useNavigate } from 'react-router-dom';
+
 
 // Add Axios interceptor to include the token in all requests
 axios.interceptors.request.use((config) => {
@@ -25,6 +27,7 @@ const PaymentSuccess = () => {
   const [orderDetails, setOrderDetails] = useState(null);
   const [isProcessed, setIsProcessed] = useState(false); // Track if order was processed
   const currentUser = JSON.parse(localStorage.getItem('user')) || null;
+  const navigate = useNavigate();
 
   useEffect(() => {
     const processOrder = async () => {

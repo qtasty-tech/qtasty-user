@@ -11,6 +11,8 @@ import Navbar from "../components/layout/Navbar";
 import Footer from "../components/layout/Footer";
 import PaymentSuccess from "../pages/PaymentSuccess";
 import AllRestaurants from "../pages/AllRestaurants";
+import DeliveryProgress from "../pages/DeliveryProgress";
+import MyOrders from "../pages/MyOrders";
 
 const AppRoutes = () => (
   <Routes>
@@ -96,7 +98,17 @@ const AppRoutes = () => (
       element={
         <>
           <Navbar />
-          <PaymentSuccess />
+          <DeliveryProgress />
+          <Footer />
+        </>
+      }
+    />
+    <Route
+      path="/my-orders"
+      element={
+        <>
+          <Navbar />
+          <MyOrders /> 
           <Footer />
         </>
       }
