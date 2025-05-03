@@ -25,10 +25,10 @@ const Navbar = () => {
         <div className="flex justify-between items-center">
           {/* Logo */}
           <Link to="/" className="flex items-center space-x-2">
-  <span className="text-gray-800 text-3xl font-bold">
-    Q<span className="text-accent">Tasty</span>
-  </span>
-</Link>
+            <span className="text-gray-800 text-3xl font-bold">
+              Q<span className="text-accent">Tasty</span>
+            </span>
+          </Link>
 
           {/* Desktop Nav */}
           <div className="hidden md:flex items-center space-x-8">
@@ -44,6 +44,9 @@ const Navbar = () => {
                 </span>
               )}
             </Link>
+
+            {/* New My Orders link */}
+            <Link to="/my-orders" className="text-supportive hover:text-primary transition-colors">My Orders</Link>
 
             {user ? (
               <div className="relative">
@@ -96,6 +99,8 @@ const Navbar = () => {
                   </span>
                 )}
               </Link>
+              {/* Mobile My Orders Link */}
+              <Link to="/my-orders" className="text-supportive hover:text-primary" onClick={() => setIsMenuOpen(false)}>My Orders</Link>
               {user ? (
                 <>
                   <Link to="/profile" className="text-supportive hover:text-primary" onClick={() => setIsMenuOpen(false)}>Profile</Link>
