@@ -19,54 +19,57 @@ import {
 } from 'react-icons/fa';
 
 const milestones = [
-  { id: 'pending', title: 'Order Received', description: 'Your order is being processed', icon: FaRegClock, category: 'restaurant' },
-  { id: 'accepted', title: 'Order Confirmed', description: 'Restaurant has accepted your order', icon: FaStore, category: 'restaurant' },
-  { id: 'preparing', title: 'Preparing', description: 'Chef is preparing your food', icon: FaUtensils, category: 'restaurant' },
-  { id: 'ready', title: 'Ready for Pickup', description: 'Your order is ready for the driver', icon: FaBell, category: 'restaurant' },
-  { id: 'assigned', title: 'Driver Assigned', description: 'A driver has been assigned', icon: FaMotorcycle, category: 'delivery' },
-  { id: 'in-progress', title: 'Driver En Route', description: 'Driver is heading to restaurant', icon: FaTruck, category: 'delivery' },
-  { id: 'pick-up', title: 'Order Picked Up', description: 'Driver has your food', icon: FaMotorcycle, category: 'delivery' },
-  { id: 'en_route', title: 'On the Way', description: 'Driver is heading to you', icon: FaRoad, category: 'delivery' },
-  { id: 'completed', title: 'Delivered', description: 'Your order has arrived!', icon: FaHome, category: 'delivery' },
-  { id: 'cancelled', title: 'Cancelled', description: 'Your order was cancelled', icon: FaTimesCircle, category: 'special' },
-  { id: 'failed', title: 'Delivery Failed', description: 'Problem with delivery', icon: FaExclamationTriangle, category: 'special' }
+  { id: 'pending',     title: 'Order Received',     description: 'Your order is being processed',                     icon: FaRegClock,      category: 'restaurant' },
+  { id: 'accepted',    title: 'Order Confirmed',    description: 'Restaurant has accepted your order',                 icon: FaStore,         category: 'restaurant' },
+  { id: 'preparing',   title: 'Preparing',          description: 'Chef is preparing your food',                       icon: FaUtensils,      category: 'restaurant' },
+  { id: 'ready',       title: 'Ready for Pickup',   description: 'Your order is ready for the driver',               icon: FaBell,          category: 'restaurant' },
+  { id: 'assigned',    title: 'Driver Assigned',    description: 'A driver has been assigned',                       icon: FaMotorcycle,    category: 'delivery'   },
+  { id: 'in-progress', title: 'Driver En Route',    description: 'Driver is heading to restaurant',                  icon: FaTruck,         category: 'delivery'   },
+  { id: 'pick-up',     title: 'Order Picked Up',    description: 'Driver has your food',                             icon: FaMotorcycle,    category: 'delivery'   },
+  { id: 'en_route',    title: 'On the Way',         description: 'Driver is heading to you',                         icon: FaRoad,          category: 'delivery'   },
+  { id: 'completed',   title: 'Delivered',          description: 'Your order has arrived!',                          icon: FaHome,          category: 'delivery'   },
+  { id: 'cancelled',   title: 'Cancelled',          description: 'Your order was cancelled',                         icon: FaTimesCircle,   category: 'special'    },
+  { id: 'failed',      title: 'Delivery Failed',    description: 'Problem with delivery',                            icon: FaExclamationTriangle, category: 'special' }
 ];
 
 export default function DeliveryProgress() {
   const { orderId } = useParams();
   const navigate = useNavigate();
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState(null);
+
+  const [isLoading,          setIsLoading]          = useState(true);
+  const [error,              setError]              = useState(null);
   const [completedMilestones, setCompletedMilestones] = useState([]);
-  const [currentMilestone, setCurrentMilestone] = useState(null);
-  const [orderStatus, setOrderStatus] = useState(null);
-  const [eventSource, setEventSource] = useState(null);
-  const [estimatedTime, setEstimatedTime] = useState('15-25 min');
-  const [driverInfo, setDriverInfo] = useState(null);
-  const [lastUpdated, setLastUpdated] = useState(new Date());
+  const [currentMilestone,   setCurrentMilestone]   = useState(null);
+  const [orderStatus,        setOrderStatus]        = useState(null);
+  const [eventSource,        setEventSource]        = useState(null);
+  const [estimatedTime,      setEstimatedTime]      = useState('15-25 min');
+  const [driverInfo,         setDriverInfo]         = useState(null);
+  const [lastUpdated,        setLastUpdated]        = useState(new Date());
 
-  // Group milestones by category
+  // Categorize milestones
   const restaurantMilestones = milestones.filter(m => m.category === 'restaurant');
-  const deliveryMilestones = milestones.filter(m => m.category === 'delivery');
-  const specialMilestones = milestones.filter(m => m.category === 'special');
+  const deliveryMilestones   = milestones.filter(m => m.category === 'delivery');
+  const specialMilestones    = milestones.filter(m => m.category === 'special');
 
-  // Determine which sections to show
-  const showDeliverySection = completedMilestones.includes('ready') || 
-                            orderStatus === 'completed' || 
-                            deliveryMilestones.some(m => completedMilestones.includes(m.id));
+  // Show delivery section once "ready" or beyond
+  const showDeliverySection =
+    completedMilestones.includes('ready') ||
+    orderStatus === 'completed' ||
+    deliveryMilestones.some(m => completedMilestones.includes(m.id));
 
-  // Improved progress updater with proper sequencing
+  // Advance progress up to statusId
   const updateProgress = (statusId) => {
     const idx = milestones.findIndex(m => m.id === statusId);
     if (idx === -1) return;
 
+    // Special states reset the timeline
     if (statusId === 'cancelled' || statusId === 'failed') {
       setCompletedMilestones([statusId]);
       setCurrentMilestone(milestones[idx]);
       return;
     }
 
-    // Get all milestones up to current status
+    // Otherwise include everything up to this step
     const newMilestones = [...new Set([
       ...completedMilestones,
       ...milestones
@@ -80,97 +83,130 @@ export default function DeliveryProgress() {
     setLastUpdated(new Date());
   };
 
-  // Handle SSE messages with proper status sequencing
-  const handleStatusUpdate = (data) => {
-    const { orderStatus, deliveryStatus, estimatedTime, driver } = data;
-
-    if (orderStatus) {
-      setOrderStatus(orderStatus);
-      updateProgress(orderStatus);
-    }
-
-    if (deliveryStatus) {
-      updateProgress(deliveryStatus);
-    }
-
-    if (estimatedTime) setEstimatedTime(estimatedTime);
-    if (driver) setDriverInfo(driver);
-  };
-
-  // Start SSE connection for order status
+  // SSE for order-side updates
   const startOrderStatusStream = () => {
     const es = new EventSource(`http://localhost:7000/api/order-status/${orderId}`);
+
+    es.onopen = () => {
+      console.log('✅ Order SSE connection opened');
+    };
 
     es.onmessage = (e) => {
       try {
         const data = JSON.parse(e.data);
-        if (data) handleStatusUpdate(data);
+        handleStatusUpdate(data);
       } catch (err) {
-        console.error('SSE parse error', err);
+        console.error('⚠️ SSE parse error (order):', err);
       }
     };
 
     es.onerror = (err) => {
-      console.error('SSE error', err);
+      if (es.readyState === EventSource.CLOSED) {
+        console.log('❌ Order SSE connection closed');
+      } else {
+        console.error('⚠️ Order SSE error:', err);
+      }
       es.close();
-      setError('Connection to order updates failed');
     };
 
     setEventSource(es);
     return es;
   };
 
-  // Start SSE connection for delivery status
+  // SSE for delivery-side updates
   const startDeliveryStatusStream = () => {
     const es = new EventSource(`http://localhost:8000/api/delivery-progress/${orderId}`);
+
+    es.onopen = () => {
+      console.log('✅ Delivery SSE connection opened');
+    };
 
     es.onmessage = (e) => {
       try {
         const data = JSON.parse(e.data);
-        if (data) handleStatusUpdate(data);
+        handleStatusUpdate(data);
       } catch (err) {
-        console.error('SSE parse error', err);
+        console.error('⚠️ SSE parse error (delivery):', err);
       }
     };
 
     es.onerror = (err) => {
-      console.error('SSE error', err);
+      if (es.readyState === EventSource.CLOSED) {
+        console.log('❌ Delivery SSE connection closed');
+      } else {
+        console.error('⚠️ Delivery SSE error:', err);
+      }
       es.close();
     };
 
     setEventSource(es);
+    return es;
   };
 
-  // Initial data fetch and SSE setup
+  // Unified handler for both streams
+  const handleStatusUpdate = (data) => {
+    const {
+      orderStatus: newOrderStatus,
+      deliveryStatus,
+      estimatedTime: newETA,
+      driver
+    } = data;
+
+    // —— Order updates ——
+    if (newOrderStatus) {
+      console.log('🔄 Order status update:', newOrderStatus);
+
+      if (newOrderStatus === 'completed') {
+        console.log(
+          '📦 Order marked completed; freezing at "Ready for Pickup" and switching to delivery stream.'
+        );
+        updateProgress('ready');
+        eventSource?.close();
+        startDeliveryStatusStream();
+      } else {
+        updateProgress(newOrderStatus);
+      }
+
+      setOrderStatus(newOrderStatus);
+    }
+
+    // —— Delivery updates ——
+    if (deliveryStatus) {
+      console.log('🚚 Delivery status update:', deliveryStatus);
+      updateProgress(deliveryStatus);
+    }
+
+    if (newETA)    setEstimatedTime(newETA);
+    if (driver)   setDriverInfo(driver);
+  };
+
+  // On mount: fetch initial status, then open appropriate SSE
   useEffect(() => {
     let alive = true;
-    let es = null;
 
     const initializeOrderTracking = async () => {
       try {
-        // First get current status via REST
-        const response = await axios.get(`http://localhost:7000/api/orders/${orderId}`, {
-          timeout: 5000
-        });
-        
+        const { data } = await axios.get(
+          `http://localhost:7000/api/orders/${orderId}`,
+          { timeout: 5000 }
+        );
         if (!alive) return;
-        
-        const { status, estimatedTime, driver } = response.data;
+
+        const { status, estimatedTime, driver } = data;
         setOrderStatus(status);
         if (estimatedTime) setEstimatedTime(estimatedTime);
-        if (driver) setDriverInfo(driver);
+        if (driver)       setDriverInfo(driver);
         updateProgress(status);
 
-        // Start appropriate SSE stream
         if (status === 'completed') {
           startDeliveryStatusStream();
         } else {
-          es = startOrderStatusStream();
+          startOrderStatusStream();
         }
       } catch (err) {
         if (!alive) return;
+        console.error('Initialization error:', err);
         setError('Failed to load order details');
-        console.error('Error initializing order tracking:', err);
       } finally {
         alive && setIsLoading(false);
       }
@@ -180,35 +216,34 @@ export default function DeliveryProgress() {
 
     return () => {
       alive = false;
-      if (eventSource) {
-        eventSource.close();
-      }
+      eventSource?.close();
     };
   }, [orderId]);
 
-  // Calculate progress for each section
+  // Helpers for progress percentages
   const restaurantProgress = () => {
-    const completed = restaurantMilestones.filter(m => completedMilestones.includes(m.id)).length;
-    return Math.round((completed / restaurantMilestones.length) * 100);
+    const done = restaurantMilestones.filter(m => completedMilestones.includes(m.id)).length;
+    return Math.round((done / restaurantMilestones.length) * 100);
   };
-
   const deliveryProgress = () => {
     if (!showDeliverySection) return 0;
-    const completed = deliveryMilestones.filter(m => completedMilestones.includes(m.id)).length;
-    return Math.round((completed / deliveryMilestones.length) * 100);
+    const done = deliveryMilestones.filter(m => completedMilestones.includes(m.id)).length;
+    return Math.round((done / deliveryMilestones.length) * 100);
   };
 
+  // Special (cancelled/failed) state
   const isSpecialState = completedMilestones.includes('cancelled') || completedMilestones.includes('failed');
   const specialState = isSpecialState
     ? milestones.find(m => completedMilestones.includes(m.id) && m.category === 'special')
     : null;
 
-  // Loading state
+  // --- RENDER ---
+
   if (isLoading) {
     return (
       <div className="min-h-screen bg-gray-50 flex justify-center items-center">
         <div className="flex flex-col items-center p-8 bg-white rounded-xl shadow-lg">
-          <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-[#5DAA80]"></div>
+          <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-[#5DAA80]" />
           <p className="mt-6 text-lg text-gray-600 font-medium">Loading your order...</p>
           <p className="mt-2 text-sm text-gray-500">This won't take long</p>
         </div>
@@ -216,7 +251,6 @@ export default function DeliveryProgress() {
     );
   }
 
-  // Error state
   if (error) {
     return (
       <div className="min-h-screen bg-gray-50 flex justify-center items-center">
@@ -243,7 +277,7 @@ export default function DeliveryProgress() {
         {/* Header */}
         <div className="bg-white rounded-t-xl shadow-sm p-6">
           <div className="flex items-center mb-4">
-            <button 
+            <button
               className="text-gray-500 hover:text-[#5DAA80] transition-colors"
               onClick={() => navigate(-1)}
             >
@@ -293,9 +327,9 @@ export default function DeliveryProgress() {
               <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
                 <div
                   className="h-full transition-all duration-700 ease-in-out"
-                  style={{ 
-                    width: `${(restaurantProgress() + deliveryProgress()) / 2}%`, 
-                    backgroundColor: '#5DAA80' 
+                  style={{
+                    width: `${(restaurantProgress() + deliveryProgress()) / 2}%`,
+                    backgroundColor: '#5DAA80'
                   }}
                 />
               </div>
@@ -310,8 +344,16 @@ export default function DeliveryProgress() {
         <div className="bg-white shadow-md rounded-b-xl overflow-hidden divide-y divide-gray-100">
           {isSpecialState ? (
             <div className="p-6 flex flex-col items-center text-center">
-              <div className={`rounded-full h-20 w-20 flex items-center justify-center mb-4 ${specialState.id === 'cancelled' ? 'bg-red-50' : 'bg-orange-50'}`}>
-                <specialState.icon className={`h-8 w-8 ${specialState.id === 'cancelled' ? 'text-red-500' : 'text-orange-500'}`} />
+              <div
+                className={`rounded-full h-20 w-20 flex items-center justify-center mb-4 ${
+                  specialState.id === 'cancelled' ? 'bg-red-50' : 'bg-orange-50'
+                }`}
+              >
+                <specialState.icon
+                  className={`h-8 w-8 ${
+                    specialState.id === 'cancelled' ? 'text-red-500' : 'text-orange-500'
+                  }`}
+                />
               </div>
               <h3 className="text-xl font-bold text-gray-800 mb-2">{specialState.title}</h3>
               <p className="text-gray-600 mb-6">{specialState.description}</p>
@@ -329,42 +371,52 @@ export default function DeliveryProgress() {
                     {restaurantProgress()}% complete
                   </span>
                 </div>
-                
                 <div className="relative">
-                  {/* Progress rail */}
                   <div className="absolute left-4 top-0 w-1 h-full bg-gray-200 rounded-full">
                     <div
                       className="absolute left-0 top-0 w-1 transition-all duration-700"
                       style={{
                         height: `${restaurantProgress()}%`,
-                        backgroundColor: '#5DAA80',
+                        backgroundColor: '#5DAA80'
                       }}
                     />
                   </div>
-
-                  {/* Milestones */}
                   <div className="space-y-6">
-                    {restaurantMilestones.map((m) => {
+                    {restaurantMilestones.map(m => {
                       const done = completedMilestones.includes(m.id);
                       const current = currentMilestone?.id === m.id;
-                      const upcoming = !done && !current && 
-                                     restaurantMilestones.slice(0, restaurantMilestones.findIndex(x => x.id === m.id))
-                                     .some(x => completedMilestones.includes(x.id));
-
+                      const upcoming =
+                        !done &&
+                        !current &&
+                        restaurantMilestones
+                          .slice(0, restaurantMilestones.findIndex(x => x.id === m.id))
+                          .some(x => completedMilestones.includes(x.id));
                       return (
                         <div key={m.id} className="relative flex items-start pl-8 group">
-                          {/* Milestone indicator */}
-                          <div className={`absolute left-4 -ml-2 mt-0.5 w-4 h-4 rounded-full flex items-center justify-center 
-                            ${done ? 'bg-[#5DAA80]' : 
-                             current ? 'bg-white border-2 border-[#5DAA80]' : 
-                             upcoming ? 'bg-gray-200' : 'bg-gray-100'}`}>
+                          <div
+                            className={`absolute left-4 -ml-2 mt-0.5 w-4 h-4 rounded-full flex items-center justify-center ${
+                              done
+                                ? 'bg-[#5DAA80]'
+                                : current
+                                ? 'bg-white border-2 border-[#5DAA80]'
+                                : upcoming
+                                ? 'bg-gray-200'
+                                : 'bg-gray-100'
+                            }`}
+                          >
                             {done && <FaCheckCircle className="text-white w-2.5 h-2.5" />}
                           </div>
-                          
-                          {/* Milestone content */}
                           <div className={`transition-all ${done ? '' : current ? 'scale-[1.02]' : 'opacity-80'}`}>
-                            <div className={`font-medium flex items-center ${done ? 'text-gray-800' : current ? 'text-[#5DAA80]' : 'text-gray-500'}`}>
-                              <m.icon className={`mr-2 ${done ? 'text-[#5DAA80]' : current ? 'text-[#5DAA80]' : 'text-gray-400'}`} />
+                            <div
+                              className={`font-medium flex items-center ${
+                                done ? 'text-gray-800' : current ? 'text-[#5DAA80]' : 'text-gray-500'
+                              }`}
+                            >
+                              <m.icon
+                                className={`mr-2 ${
+                                  done ? 'text-[#5DAA80]' : current ? 'text-[#5DAA80]' : 'text-gray-400'
+                                }`}
+                              />
                               {m.title}
                               {current && (
                                 <span className="ml-2 text-xs bg-[#5DAA80] text-white px-2 py-0.5 rounded-full">
@@ -395,42 +447,52 @@ export default function DeliveryProgress() {
                       {deliveryProgress()}% complete
                     </span>
                   </div>
-                  
                   <div className="relative">
-                    {/* Progress rail */}
                     <div className="absolute left-4 top-0 w-1 h-full bg-gray-200 rounded-full">
                       <div
                         className="absolute left-0 top-0 w-1 transition-all duration-700"
                         style={{
                           height: `${deliveryProgress()}%`,
-                          backgroundColor: '#5DAA80',
+                          backgroundColor: '#5DAA80'
                         }}
                       />
                     </div>
-
-                    {/* Milestones */}
                     <div className="space-y-6">
-                      {deliveryMilestones.map((m) => {
+                      {deliveryMilestones.map(m => {
                         const done = completedMilestones.includes(m.id);
                         const current = currentMilestone?.id === m.id;
-                        const upcoming = !done && !current && 
-                                       deliveryMilestones.slice(0, deliveryMilestones.findIndex(x => x.id === m.id))
-                                       .some(x => completedMilestones.includes(x.id));
-
+                        const upcoming =
+                          !done &&
+                          !current &&
+                          deliveryMilestones
+                            .slice(0, deliveryMilestones.findIndex(x => x.id === m.id))
+                            .some(x => completedMilestones.includes(x.id));
                         return (
                           <div key={m.id} className="relative flex items-start pl-8 group">
-                            {/* Milestone indicator */}
-                            <div className={`absolute left-4 -ml-2 mt-0.5 w-4 h-4 rounded-full flex items-center justify-center 
-                              ${done ? 'bg-[#5DAA80]' : 
-                               current ? 'bg-white border-2 border-[#5DAA80]' : 
-                               upcoming ? 'bg-gray-200' : 'bg-gray-100'}`}>
+                            <div
+                              className={`absolute left-4 -ml-2 mt-0.5 w-4 h-4 rounded-full flex items-center justify-center ${
+                                done
+                                  ? 'bg-[#5DAA80]'
+                                  : current
+                                  ? 'bg-white border-2 border-[#5DAA80]'
+                                  : upcoming
+                                  ? 'bg-gray-200'
+                                  : 'bg-gray-100'
+                              }`}
+                            >
                               {done && <FaCheckCircle className="text-white w-2.5 h-2.5" />}
                             </div>
-                            
-                            {/* Milestone content */}
                             <div className={`transition-all ${done ? '' : current ? 'scale-[1.02]' : 'opacity-80'}`}>
-                              <div className={`font-medium flex items-center ${done ? 'text-gray-800' : current ? 'text-[#5DAA80]' : 'text-gray-500'}`}>
-                                <m.icon className={`mr-2 ${done ? 'text-[#5DAA80]' : current ? 'text-[#5DAA80]' : 'text-gray-400'}`} />
+                              <div
+                                className={`font-medium flex items-center ${
+                                  done ? 'text-gray-800' : current ? 'text-[#5DAA80]' : 'text-gray-500'
+                                }`}
+                              >
+                                <m.icon
+                                  className={`mr-2 ${
+                                    done ? 'text-[#5DAA80]' : current ? 'text-[#5DAA80]' : 'text-gray-400'
+                                  }`}
+                                />
                                 {m.title}
                                 {current && (
                                   <span className="ml-2 text-xs bg-[#5DAA80] text-white px-2 py-0.5 rounded-full">
