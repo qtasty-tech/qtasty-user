@@ -36,20 +36,21 @@ export default function DeliveryProgress() {
   const { orderId } = useParams();
   const navigate = useNavigate();
 
-  const [isLoading,          setIsLoading]          = useState(true);
-  const [error,              setError]              = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [completedMilestones, setCompletedMilestones] = useState([]);
-  const [currentMilestone,   setCurrentMilestone]   = useState(null);
-  const [orderStatus,        setOrderStatus]        = useState(null);
-  const [eventSource,        setEventSource]        = useState(null);
-  const [estimatedTime,      setEstimatedTime]      = useState('15-25 min');
-  const [driverInfo,         setDriverInfo]         = useState(null);
-  const [lastUpdated,        setLastUpdated]        = useState(new Date());
+  const [currentMilestone, setCurrentMilestone] = useState(null);
+  const [orderStatus, setOrderStatus] = useState(null);
+  const [orderEventSource, setOrderEventSource] = useState(null);
+  const [deliveryEventSource, setDeliveryEventSource] = useState(null);
+  const [estimatedTime, setEstimatedTime] = useState('15-25 min');
+  const [driverInfo, setDriverInfo] = useState(null);
+  const [lastUpdated, setLastUpdated] = useState(new Date());
 
   // Categorize milestones
   const restaurantMilestones = milestones.filter(m => m.category === 'restaurant');
-  const deliveryMilestones   = milestones.filter(m => m.category === 'delivery');
-  const specialMilestones    = milestones.filter(m => m.category === 'special');
+  const deliveryMilestones = milestones.filter(m => m.category === 'delivery');
+  const specialMilestones = milestones.filter(m => m.category === 'special');
 
   // Show delivery section once "ready" or beyond
   const showDeliverySection =
@@ -83,17 +84,27 @@ export default function DeliveryProgress() {
     setLastUpdated(new Date());
   };
 
-  // SSE for order-side updates
+  // SSE for order-side updates with reconnection
   const startOrderStatusStream = () => {
     const es = new EventSource(`http://localhost:7000/api/order-status/${orderId}`);
 
+    let reconnectAttempts = 0;
+    const maxReconnectAttempts = 5;
+    let reconnectTimer;
+
     es.onopen = () => {
       console.log('✅ Order SSE connection opened');
+      reconnectAttempts = 0;
     };
 
     es.onmessage = (e) => {
       try {
         const data = JSON.parse(e.data);
+        if (data.error) {
+          console.error('Order SSE error:', data.error);
+          setError(data.error);
+          return;
+        }
         handleStatusUpdate(data);
       } catch (err) {
         console.error('⚠️ SSE parse error (order):', err);
@@ -105,25 +116,48 @@ export default function DeliveryProgress() {
         console.log('❌ Order SSE connection closed');
       } else {
         console.error('⚠️ Order SSE error:', err);
+        if (reconnectAttempts < maxReconnectAttempts) {
+          reconnectAttempts++;
+          const delay = Math.min(1000 * reconnectAttempts, 5000);
+          console.log(`♻️ Reconnecting in ${delay}ms (attempt ${reconnectAttempts}/${maxReconnectAttempts})`);
+          reconnectTimer = setTimeout(() => {
+            startOrderStatusStream();
+          }, delay);
+        } else {
+          setError('Failed to maintain connection with order service');
+        }
       }
-      es.close();
     };
 
-    setEventSource(es);
-    return es;
+    setOrderEventSource(es);
+    return () => {
+      clearTimeout(reconnectTimer);
+      es.close();
+    };
   };
 
-  // SSE for delivery-side updates
+  // SSE for delivery-side updates with reconnection
   const startDeliveryStatusStream = () => {
-    const es = new EventSource(`http://localhost:8000/api/delivery-progress/${orderId}`);
+    const es = new EventSource(`http://localhost:8000/api/deliveries/progress/${orderId}`);
+
+
+    let reconnectAttempts = 0;
+    const maxReconnectAttempts = 5;
+    let reconnectTimer;
 
     es.onopen = () => {
       console.log('✅ Delivery SSE connection opened');
+      reconnectAttempts = 0;
     };
 
     es.onmessage = (e) => {
       try {
         const data = JSON.parse(e.data);
+        if (data.error) {
+          console.error('Delivery SSE error:', data.error);
+          setError(data.error);
+          return;
+        }
         handleStatusUpdate(data);
       } catch (err) {
         console.error('⚠️ SSE parse error (delivery):', err);
@@ -135,12 +169,24 @@ export default function DeliveryProgress() {
         console.log('❌ Delivery SSE connection closed');
       } else {
         console.error('⚠️ Delivery SSE error:', err);
+        if (reconnectAttempts < maxReconnectAttempts) {
+          reconnectAttempts++;
+          const delay = Math.min(1000 * reconnectAttempts, 5000);
+          console.log(`♻️ Reconnecting in ${delay}ms (attempt ${reconnectAttempts}/${maxReconnectAttempts})`);
+          reconnectTimer = setTimeout(() => {
+            startDeliveryStatusStream();
+          }, delay);
+        } else {
+          setError('Failed to maintain connection with delivery service');
+        }
       }
-      es.close();
     };
 
-    setEventSource(es);
-    return es;
+    setDeliveryEventSource(es);
+    return () => {
+      clearTimeout(reconnectTimer);
+      es.close();
+    };
   };
 
   // Unified handler for both streams
@@ -157,11 +203,9 @@ export default function DeliveryProgress() {
       console.log('🔄 Order status update:', newOrderStatus);
 
       if (newOrderStatus === 'completed') {
-        console.log(
-          '📦 Order marked completed; freezing at "Ready for Pickup" and switching to delivery stream.'
-        );
+        console.log('📦 Order marked completed; switching to delivery stream.');
         updateProgress('ready');
-        eventSource?.close();
+        orderEventSource?.close();
         startDeliveryStatusStream();
       } else {
         updateProgress(newOrderStatus);
@@ -176,13 +220,20 @@ export default function DeliveryProgress() {
       updateProgress(deliveryStatus);
     }
 
-    if (newETA)    setEstimatedTime(newETA);
-    if (driver)   setDriverInfo(driver);
+    if (newETA) setEstimatedTime(newETA);
+    if (driver) setDriverInfo(prev => ({
+      ...prev,
+      ...driver,
+      // Preserve existing location if new update doesn't include it
+      location: driver.location || prev?.location
+    }));
   };
 
   // On mount: fetch initial status, then open appropriate SSE
   useEffect(() => {
     let alive = true;
+    let orderEsCleanup;
+    let deliveryEsCleanup;
 
     const initializeOrderTracking = async () => {
       try {
@@ -195,18 +246,18 @@ export default function DeliveryProgress() {
         const { status, estimatedTime, driver } = data;
         setOrderStatus(status);
         if (estimatedTime) setEstimatedTime(estimatedTime);
-        if (driver)       setDriverInfo(driver);
+        if (driver) setDriverInfo(driver);
         updateProgress(status);
 
         if (status === 'completed') {
-          startDeliveryStatusStream();
+          deliveryEsCleanup = startDeliveryStatusStream();
         } else {
-          startOrderStatusStream();
+          orderEsCleanup = startOrderStatusStream();
         }
       } catch (err) {
         if (!alive) return;
         console.error('Initialization error:', err);
-        setError('Failed to load order details');
+        setError('Failed to load order details. Please refresh the page.');
       } finally {
         alive && setIsLoading(false);
       }
@@ -216,7 +267,10 @@ export default function DeliveryProgress() {
 
     return () => {
       alive = false;
-      eventSource?.close();
+      orderEsCleanup?.();
+      deliveryEsCleanup?.();
+      orderEventSource?.close();
+      deliveryEventSource?.close();
     };
   }, [orderId]);
 
@@ -225,6 +279,7 @@ export default function DeliveryProgress() {
     const done = restaurantMilestones.filter(m => completedMilestones.includes(m.id)).length;
     return Math.round((done / restaurantMilestones.length) * 100);
   };
+
   const deliveryProgress = () => {
     if (!showDeliverySection) return 0;
     const done = deliveryMilestones.filter(m => completedMilestones.includes(m.id)).length;
@@ -236,8 +291,6 @@ export default function DeliveryProgress() {
   const specialState = isSpecialState
     ? milestones.find(m => completedMilestones.includes(m.id) && m.category === 'special')
     : null;
-
-  // --- RENDER ---
 
   if (isLoading) {
     return (
