@@ -69,14 +69,14 @@ const AccessibilityTaskbar = () => {
       exec('Navigating to Login', () => navigate('/login'));
     } else if (cmd === 'go to cart') {
       exec('Navigating to Cart', () => navigate('/cart'));
-    } else if (cmd === 'go to profile') {
-      exec('Navigating to Profile', () => navigate('/profile'));
+    } else if (cmd === 'go to restaurants') {
+      exec('Navigating to Restaurants', () => navigate('/restaurants'));
     } else if (cmd === 'go to collection') {
       exec('Navigating to Collection', () => navigate('/collection'));
     } else if (cmd === 'go to home') {
       exec('Navigating to Home', () => navigate('/'));
     } else if (cmd === 'go to orders') {
-      exec('Navigating to Orders', () => navigate('/orders'));
+      exec('Navigating to Orders', () => navigate('/my-orders'));
     }
   }, [transcript, navigate]);
 
